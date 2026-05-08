@@ -928,6 +928,9 @@ roslynator_analyzers.enabled_by_default = true|false
 # Simplify numeric comparison
 #dotnet_diagnostic.rcs1268.severity = suggestion
 
+# Avoid implicit conversion from 'DateTime' to 'DateTimeOffset'
+#dotnet_diagnostic.rcs1269.severity = suggestion
+
 # Use pattern matching
 #dotnet_diagnostic.rcs9001.severity = silent
 

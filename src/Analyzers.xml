@@ -7340,6 +7340,29 @@ string s = """
     </Samples>
   </Analyzer>
   <Analyzer>
+    <Id>RCS1269</Id>
+    <Identifier>AvoidImplicitConversionFromDateTimeToDateTimeOffset</Identifier>
+    <Title>Avoid implicit conversion from 'DateTime' to 'DateTimeOffset'</Title>
+    <DefaultSeverity>Info</DefaultSeverity>
+    <IsEnabledByDefault>true</IsEnabledByDefault>
+    <Summary>The implicit conversion from 'DateTime' to 'DateTimeOffset' applies the local time zone offset whenever the source 'DateTime.Kind' is 'Unspecified', which silently changes the represented instant when the source value is actually UTC (a common pattern when reading 'DateTime' values from databases). This analyzer reports the conversion unless the source is provably 'Utc' (e.g. 'DateTime.UtcNow', 'DateTime.SpecifyKind(x, DateTimeKind.Utc)', 'expr.ToUniversalTime()') or 'Local' (e.g. 'DateTime.Now', 'DateTime.SpecifyKind(x, DateTimeKind.Local)', 'expr.ToLocalTime()'). Replace the implicit conversion with an explicit construction such as 'new DateTimeOffset(dt, TimeSpan.Zero)' or 'new DateTimeOffset(DateTime.SpecifyKind(dt, DateTimeKind.Utc))' so that the offset is explicit at the call site.</Summary>
+    <Samples>
+      <Sample>
+        <Before><![CDATA[// Kind is Unspecified - typical when reading from a database column
+DateTime dt = ReadFromDatabase();
+DateTimeOffset offset = dt;]]></Before>
+        <After><![CDATA[DateTime dt = ReadFromDatabase();
+DateTimeOffset offset = new DateTimeOffset(dt, TimeSpan.Zero);]]></After>
+      </Sample>
+    </Samples>
+    <Links>
+      <Link>
+        <Url>https://learn.microsoft.com/dotnet/api/system.datetimeoffset.op_implicit</Url>
+        <Text>DateTimeOffset implicit operator (DateTime to DateTimeOffset)</Text>
+      </Link>
+    </Links>
+  </Analyzer>
+  <Analyzer>
     <Id>RCS9001</Id>
     <Identifier>UsePatternMatching</Identifier>
     <Title>Use pattern matching</Title>

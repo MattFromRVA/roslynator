@@ -3323,5 +3323,17 @@ namespace Roslynator
             helpLinkUri:        DiagnosticIdentifiers.SimplifyNumericComparison, 
             customTags:         []);
 
+        /// <summary>RCS1269</summary>
+        public static readonly DiagnosticDescriptor AvoidImplicitConversionFromDateTimeToDateTimeOffset = DiagnosticDescriptorFactory.Create(
+            id:                 DiagnosticIdentifiers.AvoidImplicitConversionFromDateTimeToDateTimeOffset, 
+            title:              "Avoid implicit conversion from 'DateTime' to 'DateTimeOffset'", 
+            messageFormat:      "Avoid implicit conversion from 'DateTime' to 'DateTimeOffset'", 
+            category:           DiagnosticCategories.Roslynator, 
+            defaultSeverity:    DiagnosticSeverity.Info, 
+            isEnabledByDefault: true, 
+            description:        null, 
+            helpLinkUri:        DiagnosticIdentifiers.AvoidImplicitConversionFromDateTimeToDateTimeOffset, 
+            customTags:         []);
+
     }
 }
