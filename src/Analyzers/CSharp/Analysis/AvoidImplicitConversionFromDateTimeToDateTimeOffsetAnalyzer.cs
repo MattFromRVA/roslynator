@@ -31,6 +31,10 @@ public sealed class AvoidImplicitConversionFromDateTimeToDateTimeOffsetAnalyzer 
         base.Initialize(context);
 
         context.RegisterSyntaxNodeAction(f => AnalyzeEqualsValueClause(f), SyntaxKind.EqualsValueClause);
+        context.RegisterSyntaxNodeAction(f => AnalyzeSimpleAssignment(f), SyntaxKind.SimpleAssignmentExpression);
+        context.RegisterSyntaxNodeAction(f => AnalyzeArgument(f), SyntaxKind.Argument);
+        context.RegisterSyntaxNodeAction(f => AnalyzeReturnStatement(f), SyntaxKind.ReturnStatement);
+        context.RegisterSyntaxNodeAction(f => AnalyzeArrowExpressionClause(f), SyntaxKind.ArrowExpressionClause);
     }
 
     private static void AnalyzeEqualsValueClause(SyntaxNodeAnalysisContext context)
@@ -41,6 +45,46 @@ public sealed class AvoidImplicitConversionFromDateTimeToDateTimeOffsetAnalyzer 
             return;
 
         AnalyzeExpression(context, equalsValueClause.Value);
+    }
+
+    private static void AnalyzeSimpleAssignment(SyntaxNodeAnalysisContext context)
+    {
+        var assignment = (AssignmentExpressionSyntax)context.Node;
+
+        if (assignment.ContainsDiagnostics)
+            return;
+
+        AnalyzeExpression(context, assignment.Right);
+    }
+
+    private static void AnalyzeArgument(SyntaxNodeAnalysisContext context)
+    {
+        var argument = (ArgumentSyntax)context.Node;
+
+        if (argument.ContainsDiagnostics)
+            return;
+
+        AnalyzeExpression(context, argument.Expression);
+    }
+
+    private static void AnalyzeReturnStatement(SyntaxNodeAnalysisContext context)
+    {
+        var returnStatement = (ReturnStatementSyntax)context.Node;
+
+        if (returnStatement.ContainsDiagnostics)
+            return;
+
+        AnalyzeExpression(context, returnStatement.Expression);
+    }
+
+    private static void AnalyzeArrowExpressionClause(SyntaxNodeAnalysisContext context)
+    {
+        var arrow = (ArrowExpressionClauseSyntax)context.Node;
+
+        if (arrow.ContainsDiagnostics)
+            return;
+
+        AnalyzeExpression(context, arrow.Expression);
     }
 
     private static void AnalyzeExpression(SyntaxNodeAnalysisContext context, ExpressionSyntax expression)

@@ -284,4 +284,86 @@ class C
 }
 ");
     }
+
+    [Fact, Trait(Traits.Analyzer, DiagnosticIdentifiers.AvoidImplicitConversionFromDateTimeToDateTimeOffset)]
+    public async Task Test_Assignment()
+    {
+        await VerifyDiagnosticAsync(@"
+using System;
+
+class C
+{
+    void M(DateTime dt)
+    {
+        DateTimeOffset offset;
+        offset = [|dt|];
+    }
+}
+");
+    }
+
+    [Fact, Trait(Traits.Analyzer, DiagnosticIdentifiers.AvoidImplicitConversionFromDateTimeToDateTimeOffset)]
+    public async Task Test_Argument()
+    {
+        await VerifyDiagnosticAsync(@"
+using System;
+
+class C
+{
+    void Take(DateTimeOffset offset) { }
+
+    void M(DateTime dt)
+    {
+        Take([|dt|]);
+    }
+}
+");
+    }
+
+    [Fact, Trait(Traits.Analyzer, DiagnosticIdentifiers.AvoidImplicitConversionFromDateTimeToDateTimeOffset)]
+    public async Task Test_Return()
+    {
+        await VerifyDiagnosticAsync(@"
+using System;
+
+class C
+{
+    DateTimeOffset M(DateTime dt)
+    {
+        return [|dt|];
+    }
+}
+");
+    }
+
+    [Fact, Trait(Traits.Analyzer, DiagnosticIdentifiers.AvoidImplicitConversionFromDateTimeToDateTimeOffset)]
+    public async Task Test_ArrowExpression()
+    {
+        await VerifyDiagnosticAsync(@"
+using System;
+
+class C
+{
+    private readonly DateTime _dt;
+    DateTimeOffset Offset => [|_dt|];
+}
+");
+    }
+
+    [Fact, Trait(Traits.Analyzer, DiagnosticIdentifiers.AvoidImplicitConversionFromDateTimeToDateTimeOffset)]
+    public async Task TestNoDiagnostic_DateTimeToDateTime()
+    {
+        // Plain DateTime -> DateTime. No conversion to DateTimeOffset; should not fire on any callsite.
+        await VerifyNoDiagnosticAsync(@"
+using System;
+
+class C
+{
+    DateTime M(DateTime dt)
+    {
+        return dt;
+    }
+}
+");
+    }
 }
