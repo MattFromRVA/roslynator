@@ -23,6 +23,7 @@ internal static class MetadataNames
     public static readonly MetadataName System_Collections_IDictionary = MetadataName.Parse("System.Collections.IDictionary");
     public static readonly MetadataName System_Collections_Immutable_ImmutableArray_T = MetadataName.Parse("System.Collections.Immutable.ImmutableArray`1");
     public static readonly MetadataName System_ComponentModel_INotifyPropertyChanged = MetadataName.Parse("System.ComponentModel.INotifyPropertyChanged");
+    public static readonly MetadataName System_DateTimeOffset = MetadataName.Parse("System.DateTimeOffset");
     public static readonly MetadataName System_Diagnostics = MetadataName.Parse("System.Diagnostics");
     public static readonly MetadataName System_Diagnostics_CodeAnalysis = MetadataName.Parse("System.Diagnostics.CodeAnalysis");
     public static readonly MetadataName System_Diagnostics_Debug = MetadataName.Parse("System.Diagnostics.Debug");
