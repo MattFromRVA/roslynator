@@ -28,4 +28,260 @@ class C
 }
 ");
     }
+
+    [Fact, Trait(Traits.Analyzer, DiagnosticIdentifiers.AvoidImplicitConversionFromDateTimeToDateTimeOffset)]
+    public async Task TestNoDiagnostic_UtcNow()
+    {
+        await VerifyNoDiagnosticAsync(@"
+using System;
+
+class C
+{
+    void M()
+    {
+        DateTimeOffset offset = DateTime.UtcNow;
+    }
+}
+");
+    }
+
+    [Fact, Trait(Traits.Analyzer, DiagnosticIdentifiers.AvoidImplicitConversionFromDateTimeToDateTimeOffset)]
+    public async Task TestNoDiagnostic_Now()
+    {
+        await VerifyNoDiagnosticAsync(@"
+using System;
+
+class C
+{
+    void M()
+    {
+        DateTimeOffset offset = DateTime.Now;
+    }
+}
+");
+    }
+
+    [Fact, Trait(Traits.Analyzer, DiagnosticIdentifiers.AvoidImplicitConversionFromDateTimeToDateTimeOffset)]
+    public async Task TestNoDiagnostic_Today()
+    {
+        await VerifyNoDiagnosticAsync(@"
+using System;
+
+class C
+{
+    void M()
+    {
+        DateTimeOffset offset = DateTime.Today;
+    }
+}
+");
+    }
+
+    [Fact, Trait(Traits.Analyzer, DiagnosticIdentifiers.AvoidImplicitConversionFromDateTimeToDateTimeOffset)]
+    public async Task TestNoDiagnostic_UnixEpoch()
+    {
+        await VerifyNoDiagnosticAsync(@"
+using System;
+
+class C
+{
+    void M()
+    {
+        DateTimeOffset offset = DateTime.UnixEpoch;
+    }
+}
+");
+    }
+
+    [Fact, Trait(Traits.Analyzer, DiagnosticIdentifiers.AvoidImplicitConversionFromDateTimeToDateTimeOffset)]
+    public async Task TestNoDiagnostic_SpecifyKindUtc()
+    {
+        await VerifyNoDiagnosticAsync(@"
+using System;
+
+class C
+{
+    void M(DateTime dt)
+    {
+        DateTimeOffset offset = DateTime.SpecifyKind(dt, DateTimeKind.Utc);
+    }
+}
+");
+    }
+
+    [Fact, Trait(Traits.Analyzer, DiagnosticIdentifiers.AvoidImplicitConversionFromDateTimeToDateTimeOffset)]
+    public async Task TestNoDiagnostic_SpecifyKindLocal()
+    {
+        await VerifyNoDiagnosticAsync(@"
+using System;
+
+class C
+{
+    void M(DateTime dt)
+    {
+        DateTimeOffset offset = DateTime.SpecifyKind(dt, DateTimeKind.Local);
+    }
+}
+");
+    }
+
+    [Fact, Trait(Traits.Analyzer, DiagnosticIdentifiers.AvoidImplicitConversionFromDateTimeToDateTimeOffset)]
+    public async Task TestNoDiagnostic_ToUniversalTime()
+    {
+        await VerifyNoDiagnosticAsync(@"
+using System;
+
+class C
+{
+    void M(DateTime dt)
+    {
+        DateTimeOffset offset = dt.ToUniversalTime();
+    }
+}
+");
+    }
+
+    [Fact, Trait(Traits.Analyzer, DiagnosticIdentifiers.AvoidImplicitConversionFromDateTimeToDateTimeOffset)]
+    public async Task TestNoDiagnostic_ToLocalTime()
+    {
+        await VerifyNoDiagnosticAsync(@"
+using System;
+
+class C
+{
+    void M(DateTime dt)
+    {
+        DateTimeOffset offset = dt.ToLocalTime();
+    }
+}
+");
+    }
+
+    [Fact, Trait(Traits.Analyzer, DiagnosticIdentifiers.AvoidImplicitConversionFromDateTimeToDateTimeOffset)]
+    public async Task TestNoDiagnostic_NewDateTimeWithUtcKind()
+    {
+        await VerifyNoDiagnosticAsync(@"
+using System;
+
+class C
+{
+    void M()
+    {
+        DateTimeOffset offset = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+    }
+}
+");
+    }
+
+    [Fact, Trait(Traits.Analyzer, DiagnosticIdentifiers.AvoidImplicitConversionFromDateTimeToDateTimeOffset)]
+    public async Task TestNoDiagnostic_NewDateTimeWithLocalKind()
+    {
+        await VerifyNoDiagnosticAsync(@"
+using System;
+
+class C
+{
+    void M()
+    {
+        DateTimeOffset offset = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Local);
+    }
+}
+");
+    }
+
+    [Fact, Trait(Traits.Analyzer, DiagnosticIdentifiers.AvoidImplicitConversionFromDateTimeToDateTimeOffset)]
+    public async Task TestNoDiagnostic_SpecifyKindUtc_NamedArgumentsReversed()
+    {
+        await VerifyNoDiagnosticAsync(@"
+using System;
+
+class C
+{
+    void M(DateTime dt)
+    {
+        DateTimeOffset offset = DateTime.SpecifyKind(kind: DateTimeKind.Utc, value: dt);
+    }
+}
+");
+    }
+
+    [Fact, Trait(Traits.Analyzer, DiagnosticIdentifiers.AvoidImplicitConversionFromDateTimeToDateTimeOffset)]
+    public async Task TestNoDiagnostic_ExplicitConstructor()
+    {
+        await VerifyNoDiagnosticAsync(@"
+using System;
+
+class C
+{
+    void M(DateTime dt)
+    {
+        DateTimeOffset offset = new DateTimeOffset(dt, TimeSpan.Zero);
+    }
+}
+");
+    }
+
+    [Fact, Trait(Traits.Analyzer, DiagnosticIdentifiers.AvoidImplicitConversionFromDateTimeToDateTimeOffset)]
+    public async Task Test_NewDateTimeWithoutKind()
+    {
+        await VerifyDiagnosticAsync(@"
+using System;
+
+class C
+{
+    void M()
+    {
+        DateTimeOffset offset = [|new DateTime(2025, 1, 1)|];
+    }
+}
+");
+    }
+
+    [Fact, Trait(Traits.Analyzer, DiagnosticIdentifiers.AvoidImplicitConversionFromDateTimeToDateTimeOffset)]
+    public async Task Test_DateTimeParse()
+    {
+        await VerifyDiagnosticAsync(@"
+using System;
+
+class C
+{
+    void M()
+    {
+        DateTimeOffset offset = [|DateTime.Parse(""2025-01-01"")|];
+    }
+}
+");
+    }
+
+    [Fact, Trait(Traits.Analyzer, DiagnosticIdentifiers.AvoidImplicitConversionFromDateTimeToDateTimeOffset)]
+    public async Task Test_DateTimeMinValue()
+    {
+        await VerifyDiagnosticAsync(@"
+using System;
+
+class C
+{
+    void M()
+    {
+        DateTimeOffset offset = [|DateTime.MinValue|];
+    }
+}
+");
+    }
+
+    [Fact, Trait(Traits.Analyzer, DiagnosticIdentifiers.AvoidImplicitConversionFromDateTimeToDateTimeOffset)]
+    public async Task Test_LocalParameter()
+    {
+        await VerifyDiagnosticAsync(@"
+using System;
+
+class C
+{
+    void M(DateTime dt)
+    {
+        DateTimeOffset offset = [|dt|];
+    }
+}
+");
+    }
 }

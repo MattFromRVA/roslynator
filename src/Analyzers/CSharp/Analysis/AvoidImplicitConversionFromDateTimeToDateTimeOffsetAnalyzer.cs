@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation and Contributors. Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
+using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -63,9 +64,114 @@ public sealed class AvoidImplicitConversionFromDateTimeToDateTimeOffsetAnalyzer 
         if (!convertedType.HasMetadataName(MetadataNames.System_DateTimeOffset))
             return;
 
+        if (IsKnownSafeKind(inner, context.SemanticModel, context.CancellationToken))
+            return;
+
         DiagnosticHelpers.ReportDiagnostic(
             context,
             DiagnosticRules.AvoidImplicitConversionFromDateTimeToDateTimeOffset,
             inner);
+    }
+
+    private static bool IsKnownSafeKind(ExpressionSyntax expression, SemanticModel semanticModel, CancellationToken cancellationToken)
+    {
+        // 'DateTime.UtcNow' / 'DateTime.Now' / 'DateTime.Today' (properties) / 'DateTime.UnixEpoch' (static field)
+        if (expression is MemberAccessExpressionSyntax memberAccess)
+        {
+            ISymbol member = semanticModel.GetSymbolInfo(memberAccess, cancellationToken).Symbol;
+            if (member is IPropertySymbol prop
+                && prop.IsStatic
+                && prop.ContainingType?.SpecialType == SpecialType.System_DateTime)
+            {
+                switch (prop.Name)
+                {
+                    case "UtcNow":
+                    case "Now":
+                    case "Today":
+                        return true;
+                }
+            }
+
+            if (member is IFieldSymbol field
+                && field.IsStatic
+                && field.ContainingType?.SpecialType == SpecialType.System_DateTime
+                && field.Name == "UnixEpoch")
+            {
+                return true;
+            }
+        }
+
+        // 'DateTime.SpecifyKind(x, DateTimeKind.Utc/Local)', 'expr.ToUniversalTime()', 'expr.ToLocalTime()'
+        if (expression is InvocationExpressionSyntax invocation)
+        {
+            ISymbol invokedSymbol = semanticModel.GetSymbolInfo(invocation, cancellationToken).Symbol;
+            if (invokedSymbol is IMethodSymbol method
+                && method.ContainingType?.SpecialType == SpecialType.System_DateTime)
+            {
+                switch (method.Name)
+                {
+                    case "ToUniversalTime":
+                    case "ToLocalTime":
+                        return true;
+                    case "SpecifyKind":
+                        return ArgumentListHasLiteralUtcOrLocalKind(invocation.ArgumentList, semanticModel, cancellationToken);
+                }
+            }
+        }
+
+        // 'new DateTime(..., DateTimeKind.Utc/Local)'
+        if (expression is ObjectCreationExpressionSyntax creation)
+        {
+            ISymbol ctorSymbol = semanticModel.GetSymbolInfo(creation, cancellationToken).Symbol;
+            if (ctorSymbol is IMethodSymbol ctor
+                && ctor.MethodKind == MethodKind.Constructor
+                && ctor.ContainingType?.SpecialType == SpecialType.System_DateTime)
+            {
+                return ArgumentListHasLiteralUtcOrLocalKind(creation.ArgumentList, semanticModel, cancellationToken);
+            }
+        }
+
+        return false;
+    }
+
+    // Scans an argument list for one whose expression has type 'System.DateTimeKind' and is a literal
+    // 'DateTimeKind.Utc' or 'DateTimeKind.Local' member access. Robust to named-argument reordering.
+    private static bool ArgumentListHasLiteralUtcOrLocalKind(ArgumentListSyntax args, SemanticModel semanticModel, CancellationToken cancellationToken)
+    {
+        if (args is null)
+            return false;
+
+        foreach (ArgumentSyntax argument in args.Arguments)
+        {
+            ITypeSymbol argType = semanticModel.GetTypeInfo(argument.Expression, cancellationToken).Type;
+            if (argType?.Name == "DateTimeKind"
+                && argType.ContainingNamespace?.Name == "System"
+                && argType.ContainingNamespace.ContainingNamespace?.IsGlobalNamespace == true)
+            {
+                return ArgumentIsLiteralUtcOrLocal(argument, semanticModel, cancellationToken);
+            }
+        }
+
+        return false;
+    }
+
+    private static bool ArgumentIsLiteralUtcOrLocal(ArgumentSyntax argument, SemanticModel semanticModel, CancellationToken cancellationToken)
+    {
+        if (argument.Expression is not MemberAccessExpressionSyntax memberAccess)
+            return false;
+
+        ISymbol symbol = semanticModel.GetSymbolInfo(memberAccess, cancellationToken).Symbol;
+        if (symbol is not IFieldSymbol field || !field.IsStatic)
+            return false;
+
+        INamedTypeSymbol containingType = field.ContainingType;
+        if (containingType?.Name != "DateTimeKind"
+            || containingType.ContainingNamespace?.Name != "System"
+            || containingType.ContainingNamespace.ContainingNamespace?.IsGlobalNamespace != true)
+        {
+            return false;
+        }
+
+        return field.Name is "Utc" or "Local";
     }
 }
