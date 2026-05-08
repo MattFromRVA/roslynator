@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add analyzer [RCS1269](https://josefpihrt.github.io/docs/roslynator/analyzers/RCS1269) (avoid implicit conversion from `DateTime` to `DateTimeOffset`) ([Issue](https://github.com/dotnet/roslynator/issues/1696))
+
 ### Fixed
 
 - Fix enum contained flags check for partial matches in [RCS1258](https://josefpihrt.github.io/docs/roslynator/analyzers/RCS1258) ([PR](https://github.com/dotnet/roslynator/pull/1740) by @ovska)
